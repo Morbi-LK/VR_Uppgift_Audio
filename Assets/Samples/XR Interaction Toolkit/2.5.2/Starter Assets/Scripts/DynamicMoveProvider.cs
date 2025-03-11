@@ -1,5 +1,6 @@
 using Unity.XR.CoreUtils;
 using UnityEngine.Assertions;
+using UnityEngine.Events;
 
 namespace UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets
 {
@@ -10,6 +11,10 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets
     /// </summary>
     public class DynamicMoveProvider : ActionBasedContinuousMoveProvider
     {
+        public UnityAction MoveStart;
+        public UnityAction MoveEnd;
+        private bool _isMoving = false;
+
         /// <summary>
         /// Defines which transform the XR Origin's movement direction is relative to.
         /// </summary>
@@ -116,7 +121,19 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.StarterAssets
             // Don't need to do anything if the total input is zero.
             // This is the same check as the base method.
             if (input == Vector2.zero)
+            {
+                if(_isMoving)
+                {
+                    _isMoving = false;
+                    MoveEnd.Invoke();
+                }
                 return Vector3.zero;
+            }
+            if (!_isMoving)
+            {
+                _isMoving = true;
+                MoveStart.Invoke();
+            }
 
             // Initialize the Head Transform if necessary, getting the Camera from XR Origin
             if (m_HeadTransform == null)
